@@ -1,0 +1,10 @@
+opencv-python
+numpy
+scipy
+scenedetect
+torch
+torchvision
+tqdm
+scikit-learn
+pickle5
+gdown

@@ -6,44 +6,7 @@ from scenedetect import VideoStreamCv2, SceneManager, StatsManager
 from scenedetect.detectors import ContentDetector
 from faceDetector.s3fd import S3FD
 
-warnings.filterwarnings("ignore")
-
-parser = argparse.ArgumentParser(description="Scene & Face Detection")
-parser.add_argument('--input_video', type=str, required=True, help='Path to the input video file')
-parser.add_argument('--output_folder', type=str, required=True, help='Path to the output folder')
-parser.add_argument('--facedetScale', type=float, default=0.25, help='Scale factor for face detection')
-parser.add_argument('--minTrack', type=int, default=10, help='Min frames for each shot')
-parser.add_argument('--numFailedDet', type=int, default=10, help='Missed detections before tracking stops')
-parser.add_argument('--minFaceSize', type=int, default=1, help='Minimum face size in pixels')
-parser.add_argument('--cropScale', type=float, default=0.40, help='Scale bounding box')
-parser.add_argument('--start', type=int, default=0, help='Start time of the video')
-parser.add_argument('--duration', type=int, default=0, help='Duration of the video')
-args = parser.parse_args()
-
-args.videoPath = args.input_video
-args.savePath = args.output_folder
-
-def save_data(data, path):
-    with open(path + '.pckl', 'wb') as fil:
-        import pickle
-        pickle.dump(data, fil)
-
-
-def scene_detect(args):
-    video = VideoStreamCv2(args.videoPath)  # No need to open()
-    stats_manager = StatsManager()
-    scene_manager = SceneManager(stats_manager)
-    scene_manager.add_detector(ContentDetector())
-
-    scene_manager.detect_scenes(frame_source=video)  # Directly use video
-    scene_list = scene_manager.get_scene_list(start_in_scene=True)
-
-    print('List of scenes obtained:')
-    for i, scene in enumerate(scene_list):
-        print(f'Scene {i}: Start Frame {scene[0].get_frames()}, End Frame {scene[1].get_frames()}')
-    save_data(scene_list, os.path.join(args.savePath, 'scene'))
-
-    return scene_list
+from utils import save_data
 
 
 def inference_video(args):
@@ -100,29 +63,43 @@ def track_faces(args, faces):
     scene_list = pickle.load(open(os.path.join(args.savePath, 'scene.pckl'), 'rb'))
 
     for shot in scene_list:
-        if shot[1]['frame_num'] - shot[0]['frame_num'] >= args.minTrack:
-            all_tracks.extend(track_shot(args, faces[shot[0]['frame_num']:shot[1]['frame_num']]))
-
+        start_frame, end_frame = shot[0].get_frames(), shot[1].get_frames()
+        if end_frame - start_frame >= args.minTrack:
+            scene_faces = faces[start_frame:end_frame]
+            all_tracks.extend(track_shot(args, scene_faces))
     save_data(all_tracks, os.path.join(args.savePath, 'tracks'))
     return all_tracks
 
 
 def main():
-    os.makedirs(args.savePath, exist_ok=True)
-    os.makedirs(os.path.join(args.savePath, 'pyframes'), exist_ok=True)
+    args = argparse.Namespace(
+        input_video="/home/tim/Work/nexa/nexa-face-detection/data/out/test_snippet2",
+        output_folder="/home/tim/Work/nexa/nexa-face-detection/data/out/test_snippet2",
+        facedetScale=0.5,
+        minTrack=15,
+        numFailedDet=5,
+        minFaceSize=50,
+        cropScale=0.5,
+        start=10,
+        duration=60
+    )
 
-    # Extract frames
-    frame_path = os.path.join(args.savePath, 'pyframes', '%06d.jpg')
-    subprocess.call(f"ffmpeg -y -i {args.videoPath} -qscale:v 2 -r 25 {frame_path}", shell=True)
+    args.videoPath = args.input_video
+    args.savePath = args.output_folder
 
-    # Scene detection
-    scene_detect(args)
+    # faces = inference_video(args)
 
-    # Face detection
-    faces = inference_video(args)
+    # load faces
+    faces = pickle.load(open(os.path.join(args.savePath, 'faces.pckl'), 'rb'))
 
-    # Face tracking
     track_faces(args, faces)
+
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+

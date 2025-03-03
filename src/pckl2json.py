@@ -39,9 +39,12 @@ def convert_pickles_to_json(input_folder, output_folder):
             except Exception as e:
                 print(f"Error processing {file_name}: {e}")
 
+def main():
+    # Input and output folders
+    inp = "../data/out/test_snippet2"
+    outp = "../data/out/test_snippet2"
 
-# Input and output folders
-input_folder = "../data/out/test_snippet2"
-output_folder = "../data/out/test_snippet2"
+    convert_pickles_to_json(inp, outp)
 
-convert_pickles_to_json(input_folder, output_folder)
+if __name__ == '__main__':
+    main()

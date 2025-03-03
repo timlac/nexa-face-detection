@@ -1,13 +1,18 @@
-import os, subprocess
+import os, subprocess, glob
 from scenedetect import VideoStreamCv2, SceneManager, StatsManager
 from scenedetect.detectors import ContentDetector
 
-from src.utils import save_data
+from utils import save_data
+
 
 def extract_frames(video_path, save_path):
-    # Extract frames
-    frame_path = os.path.join(save_path, 'pyframes', '%06d.jpg')
-    subprocess.call(f"ffmpeg -y -i {video_path} -qscale:v 2 -r 25 {frame_path}", shell=True)
+    pyframes_path = os.path.join(save_path, 'pyframes')
+    os.makedirs(pyframes_path, exist_ok=True)  # Ensures directory exists
+
+    frame_path = os.path.join(pyframes_path, '%06d.jpg')
+
+    subprocess.call(f"ffmpeg -y -i {video_path} -qscale:v 2 -r 5 {frame_path}", shell=True)
+
     return frame_path
 
 
@@ -26,8 +31,10 @@ def scene_detect(video_path, save_path):
 
 
 def main():
-    video_path = '/media/tim/TIMS-DISK/kosmos/snippets/output2.mp4'
+    video_path = '/media/tim/TIMS-DISK/kosmos/snippets/output_downsampled.mp4'
     save_path = '../data/out/test_snippet2'
+
+    extract_frames(video_path, save_path)
 
     scene_list = scene_detect(video_path, save_path)
 

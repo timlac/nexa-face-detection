@@ -1,8 +1,15 @@
 import sys, time, os, argparse, glob, subprocess, warnings, cv2, pickle, numpy, json
 
 from extract_frames_scenes import extract_frames, scene_detect
-
 from face_tracking import track_faces, inference_video
+from pckl2json import convert_pickles_to_json
+
+
+# TODO: Extract frames along with corresponding time stamps using ChatGPTS suggested method.
+# This way we can run with variable frame rates and still have the correct time stamps.
+# A most flexible approach with no prior down sampling required.
+
+warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser(description="Scene & Face Detection")
 parser.add_argument('--input_video', type=str, required=True, help='Path to the input video file')
@@ -35,6 +42,10 @@ def main():
 
     tracks = track_faces(args, faces)
 
+    # Convert pickles to JSON
+    json_path = os.path.join(args.savePath, 'out_json')
+    os.makedirs(json_path, exist_ok=True)
+    convert_pickles_to_json(args.savePath, json_path)
 
 if __name__ == '__main__':
     main()

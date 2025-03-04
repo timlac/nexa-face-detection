@@ -1,13 +1,9 @@
 import sys, time, os, argparse, glob, subprocess, warnings, cv2, pickle, numpy, json
 
-from extract_frames_scenes import extract_frames, scene_detect
+from extract_frames_scenes import extract_frames, scene_detect, rename_frames
 from face_tracking import track_faces, inference_video
 from pckl2json import convert_pickles_to_json
 
-
-# TODO: Extract frames along with corresponding time stamps using ChatGPTS suggested method.
-# This way we can run with variable frame rates and still have the correct time stamps.
-# A most flexible approach with no prior down sampling required.
 
 warnings.filterwarnings("ignore")
 
@@ -21,6 +17,7 @@ parser.add_argument('--minFaceSize', type=int, default=1, help='Minimum face siz
 parser.add_argument('--cropScale', type=float, default=0.40, help='Scale bounding box')
 parser.add_argument('--start', type=int, default=0, help='Start time of the video')
 parser.add_argument('--duration', type=int, default=0, help='Duration of the video')
+parser.add_argument('--frameStep', type=int, default=1, help='Skip frames during extraction')
 args = parser.parse_args()
 
 args.videoPath = args.input_video
@@ -31,8 +28,12 @@ def main():
     os.makedirs(args.savePath, exist_ok=True)
     os.makedirs(os.path.join(args.savePath, 'pyframes'), exist_ok=True)
 
+    pyframes_path = os.path.join(args.savePath, 'pyframes')
+
     # Extract frames
-    frame_path = extract_frames(args.videoPath, args.savePath)
+    frame_path = extract_frames(args.videoPath, args.savePath, args.frameStep)
+    if args.frameStep > 1:
+        rename_frames(pyframes_path, args.frameStep)
 
     # Scene detection
     scene_list = scene_detect(args.videoPath, args.savePath)

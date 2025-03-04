@@ -71,10 +71,12 @@ def track_faces(args, faces):
     return all_tracks
 
 
+warnings.filterwarnings("ignore")
+
+
 def main():
     args = argparse.Namespace(
-        input_video="/home/tim/Work/nexa/nexa-face-detection/data/out/test_snippet2",
-        output_folder="/home/tim/Work/nexa/nexa-face-detection/data/out/test_snippet2",
+        output_folder="/home/tim/Work/nexa/nexa-face-detection/data/out/test_snippet_timestamps_2",
         facedetScale=0.5,
         minTrack=15,
         numFailedDet=5,
@@ -84,10 +86,10 @@ def main():
         duration=60
     )
 
-    args.videoPath = args.input_video
+    # args.videoPath = args.input_video
     args.savePath = args.output_folder
 
-    # faces = inference_video(args)
+    faces = inference_video(args)
 
     # load faces
     faces = pickle.load(open(os.path.join(args.savePath, 'faces.pckl'), 'rb'))

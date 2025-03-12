@@ -6,7 +6,7 @@ from src.faceDetector.s3fd import S3FD
 from src.basic_pipeline.pipe import (
     extract_frames,
     scene_detect,
-    inference_video,
+    inference_video, get_video_metadata,
 )
 
 import warnings
@@ -39,8 +39,11 @@ def process_videos(input_dir, output_dir):
         args.input_video = video_path
         args.savePath = save_path
         args.facedetScale = 0.25
+        args.extractionFrameRate = 5
 
-        extract_frames(args.input_video, args.savePath)
+        get_video_metadata(args)
+
+        extract_frames(args.input_video, args.savePath, args.extractionFrameRate)
         scene_list = scene_detect(args.input_video, args.savePath)
 
         dets = inference_video(args)

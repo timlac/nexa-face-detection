@@ -8,7 +8,40 @@ from constants import ROOT_DIR
 from src.utils import save_data
 import numpy as np
 
-def extract_frames(video_path, save_path):
+
+def get_video_metadata(args):
+    """Extracts metadata such as duration and frame rate from a video file."""
+    cap = cv2.VideoCapture(args.input_video)
+
+    if not cap.isOpened():
+        raise ValueError(f"Could not open video: {args.input_video}")
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    duration = frame_count / fps if fps > 0 else 0
+
+    cap.release()
+
+    meta = {
+        "video_path": args.input_video,
+        "total_duration": round(duration, 2),  # Seconds
+        "frame_rate": round(fps, 2),
+        "total_frames": frame_count,
+        "extraction_frame_rate": args.extractionFrameRate,
+    }
+
+    metadata_path = os.path.join(args.savePath, "metadata.json")
+    with open(metadata_path, "w") as f:
+        json.dump(meta, f, indent=4)
+
+    print(f"Metadata saved to {metadata_path}")
+
+    return meta
+
+
+
+
+def extract_frames(video_path, save_path, frame_rate=5):
     pyframes_path = os.path.join(save_path, 'pyframes')
     os.makedirs(pyframes_path, exist_ok=True)  # Ensures directory exists
 
@@ -18,7 +51,7 @@ def extract_frames(video_path, save_path):
     # -r 5 = frame rate
     # -async 1 = audio sync
     # -y = overwrite output files
-    command = f"ffmpeg -y -i {video_path} -qscale:v 2 -r 5 -async 1 {frame_path}"
+    command = f"ffmpeg -y -i {video_path} -qscale:v 2 -r {frame_rate} -async 1 {frame_path}"
 
     subprocess.call(command, shell=True)
 

@@ -5,8 +5,11 @@ import torch
 from torchvision import transforms
 from .nets import S3FDNet
 from .box_utils import nms_
+import os
 
-PATH_WEIGHT = 'faceDetector/s3fd/sfd_face.pth'
+from constants import ROOT_DIR
+
+PATH_WEIGHT = os.path.join(ROOT_DIR, 'src/faceDetector/s3fd/sfd_face.pth')
 if os.path.isfile(PATH_WEIGHT) == False:
     Link = "1KafnHz7ccT-3IyddBsL5yi2xGtxAKypt"
     cmd = "gdown --id %s -O %s"%(Link, PATH_WEIGHT)

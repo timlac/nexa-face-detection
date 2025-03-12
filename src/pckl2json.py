@@ -41,8 +41,8 @@ def convert_pickles_to_json(input_folder, output_folder):
 
 def main():
     # Input and output folders
-    inp = "../data/out/test_snippet_timestamps_2"
-    outp = "../data/out/test_snippet_timestamps_2"
+    inp = "../data/out/temp"
+    outp = "../data/out/temp"
 
     convert_pickles_to_json(inp, outp)
 
